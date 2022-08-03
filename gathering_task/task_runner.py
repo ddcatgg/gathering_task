@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 from typing import List
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from tqdm import tqdm
 
 
 class Task:
+    CONCURRENT_THREADS = 0
+    CONCURRENT_PROCESS = 0
 
     def get_params(self):
         pass
@@ -43,13 +46,24 @@ class TaskRunner:
             params = [params]
         self.log.info('params count: %d', len(params))
 
-        # todo: retry
-        for param in tqdm(params, total=len(params), desc=str(task)):
-            res = task.run(param)
-            result.append(res)
+        if params:
+            if task.CONCURRENT_THREADS:
+                with ThreadPoolExecutor(max_workers=task.CONCURRENT_THREADS) as executor:
+                    iter_results = [executor.submit(task.run, param) for param in params]
+                    for future in tqdm(iter_results, total=len(params), desc=str(task)):
+                        result.append(future.result())
+
+            elif task.CONCURRENT_PROCESS:
+                with ProcessPoolExecutor(max_workers=task.CONCURRENT_PROCESS) as executor:
+                    iter_results = [executor.submit(task.run, param) for param in params]
+                    for future in tqdm(iter_results, total=len(params), desc=str(task)):
+                        result.append(future.result())
+            else:
+                for param in tqdm(params, total=len(params), desc=str(task)):
+                    res = task.run(param)
+                    result.append(res)
 
         self.log.info('result count: %d', len(result))
-
         task.post_run(result)
 
         self.log.info('task end: %s', task)
