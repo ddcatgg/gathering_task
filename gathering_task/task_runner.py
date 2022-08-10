@@ -31,20 +31,23 @@ class TaskRunner:
 
     def run(self):
         c = len(self.tasks)
-        self.log.info('total tasks: %d', c)
+        self.log.info('Total tasks: %d', c)
 
         for i, task in enumerate(self.tasks):
             self.log.info('run task %d/%d : %s', i + 1, c, task)
             self.run_task(task)
 
+        self.log.info('All tasks completed.')
+
     def run_task(self, task):
         result = []
-        self.log.info('task start: %s', task)
+        self.log.info('Task start: %s (concurrent threads/process: %d/%d)',
+                      task, task.CONCURRENT_THREADS, task.CONCURRENT_PROCESS)
 
         params = task.get_params()
         if not isinstance(params, (tuple, list, set)):
             params = [params]
-        self.log.info('params count: %d', len(params))
+        self.log.info('Task params count: %d', len(params))
 
         if params:
             if task.CONCURRENT_THREADS:
@@ -63,8 +66,7 @@ class TaskRunner:
                     res = task.run(param)
                     result.append(res)
 
-        self.log.info('result count: %d', len(result))
         task.post_run(result)
 
-        self.log.info('task end: %s', task)
+        self.log.info('Task end: %s', task)
         return result
