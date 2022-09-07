@@ -1,6 +1,6 @@
 [project]
 name = "gathering_task"
-version = "0.2.1"
+version = "0.3.0"
 authors = [
   { name="DDGG", email="ddcatgg@gmail.com" },
 ]
