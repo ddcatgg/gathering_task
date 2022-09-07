@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from typing import List
+from typing import List, Any
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from tqdm import tqdm
@@ -10,7 +10,7 @@ class Task:
     CONCURRENT_THREADS = 0
     CONCURRENT_PROCESS = 0
 
-    def get_params(self):
+    def get_params(self) -> Any:
         pass
 
     def run(self, param):
@@ -25,7 +25,7 @@ class Task:
 
 class TaskRunner:
 
-    def __init__(self, tasks=None):
+    def __init__(self, tasks: List[Task] = None):
         self.tasks = tasks or []
         self.log = logging.getLogger(self.__class__.__name__)
 
@@ -39,7 +39,7 @@ class TaskRunner:
 
         self.log.info('All tasks completed.')
 
-    def run_task(self, task):
+    def run_task(self, task: Task):
         result = []
         self.log.info('Task start: %s (concurrent threads/process: %d/%d)',
                       task, task.CONCURRENT_THREADS, task.CONCURRENT_PROCESS)
